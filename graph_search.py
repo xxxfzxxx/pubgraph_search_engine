@@ -28,16 +28,6 @@ return p ''' %(name1, org1, name2, org2)
     result = graph.run(instruction).data()
     return result
 
-def associate_paper(graph, title):
-    instruction = '''match (:paper{title:"%s"})-[*1..1]-(p:paper)
-return  p.title ''' % (title)
-    result = graph.run(instruction).data()
-    res = []
-    for i in result:
-        res.append((i["p.title"]))
-    res = list(set(res))
-    return res
-    
 def find_authors(graph, title):
     instruction = '''match ((p:author)-[*1..1]-(b:paper{title:"%s"}))
 return  p.name, p.org ''' % (title)
@@ -70,21 +60,32 @@ if __name__ == '__main__':
     graph = Graph('bolt://40.114.125.234:7687',username='neo4j',password='123456aa')
     # Find Related Author
     Author_name, Author_org = "Nestor Garay-Vitoria", "-1"
+    print("Relevant Authors:")
     print(associate_author(graph, Author_name, Author_org))
+    print("-------------------")
     # Find Relate Paper
     Paper_title = "Rothko's Negative Theology"
+    print("Relevant Papers:")
     print(associate_paper(graph, Paper_title))
+    print("-------------------")
     # Find the shortest path between two authors
     author1_name, author1_org = "Nestor Garay-Vitoria", "-1"
     author2_name, author2_org = "Julio Abascal", "-1"
+    print("shortest path:")
     print(shortest_path(graph, author1_name, author1_org, author2_name, author2_org))
+    print("-------------------")
     # Coauthorship:
     # Find all authors of a paper
     Paper_title = "Evaluation of Prediction Methods Applied to an Inflected Language."
+    print("all authors of a paper:")
     print(find_authors(graph, Paper_title))
+    print("-------------------")
     # Find papers that two authors coauthor on 
+    print("papers that two authors coauthor on:")
     author1_name, author1_org = "Nestor Garay-Vitoria", "-1"
     author2_name, author2_org = "Julio Abascal", "-1"
     print(common_paper(graph, author1_name, author1_org, author2_name, author2_org))
+    print("-------------------")
+    print("Pagerank score of a paper")
     Paper_title = "Action of diethylstilboestrol on mouse vaginal sialic acids. I."
     print(pagerank(graph, Paper_title))
