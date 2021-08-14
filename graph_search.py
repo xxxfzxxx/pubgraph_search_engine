@@ -1,4 +1,3 @@
-from tqdm import tqdm
 from py2neo import Graph, Node, Relationship
 
 def associate_author(graph, name, org):

@@ -14,66 +14,115 @@ class MY_GUI():
 
     #设置窗口
     def set_init_window(self):
+        self.graph = Graph('bolt://40.114.125.234:7687',username='neo4j',password='123456aa')
         self.init_window_name.title("Search Engine")          
-        # self.init_window_name.geometry('200x200+280+280')       #1068x681 is window size, +10 +10 is position shows
-        self.init_window_name['width']=400
-        self.init_window_name['height']=400
-        Label(self.init_window_name, text="Publication Search", font=('Arial', 20)).place(x=110,y=20)
-        Label(self.init_window_name, text="title", font=('Arial', 17)).place(x=160,y=55)
-        self.title = Text(self.init_window_name, width=40, height=1)
-        self.title.place(x=50,y=85)
-        Label(self.init_window_name, text="keyword", font=('Arial', 17)).place(x=145,y=110)
-        self.keyword = Text(self.init_window_name, width=40, height=1)
-        self.keyword.place(x=50,y=145)
-        Label(self.init_window_name, text="year", font=('Arial', 17)).place(x=155,y=167)
-        self.year = Text(self.init_window_name, width=40, height=1)
-        self.year.place(x=50,y=195)
-        # Label(self.init_window_name, text="keyword", font=('Arial', 17)).place(x=145,y=110)
-        # self.keyword = Text(self.init_window_name, width=40, height=1)
-        # self.keyword.place(x=50,y=145)
-        # self.label2 = Label(self.init_window_name, text="title")
-        # self.label2.grid(row=10, column=30)
-        # self.log_label = Label(self.init_window_name, text="日志")
-        # self.log_label.grid(row=12, column=0)
-        #文本框
-        # self.init_data_Text = Text(self.init_window_name, width=67, height=35)  #原始数据录入框
-        # self.init_data_Text.grid(row=1, column=0, rowspan=10, columnspan=10)
-        # self.result_data_Text = Text(self.init_window_name, width=70, height=49)  #处理结果展示
-        # self.result_data_Text.grid(row=1, column=12, rowspan=15, columnspan=10)
-        # self.log_data_Text = Text(self.init_window_name, width=66, height=9)  # 日志框
-        # self.log_data_Text.grid(row=13, column=0, columnspan=10)
-        # #按钮
+        self.init_window_name.geometry('240x240+280+280')       #1068x681 is window size, +10 +10 is position shows
+        Label(self.init_window_name, text="Publication Search", font=('Arial', 20)).grid(row=0, column=4)
+        Label(self.init_window_name, text="title", font=('Arial', 17)).grid(row=3, column=4)
+        self.title = Text(self.init_window_name, width=20, height=1)
+        self.title.grid(row=5,column=4,rowspan = 4)
+        Label(self.init_window_name, text="keyword", font=('Arial', 17)).grid(row=9, column=4)
+        self.keyword = Text(self.init_window_name, width=20, height=1)
+        self.keyword.grid(row=11,column=4,rowspan = 4)
+        Label(self.init_window_name, text="year", font=('Arial', 17)).grid(row=15, column=4)
+        self.year = Text(self.init_window_name, width=20, height=1)
+        self.year.grid(row=17, column=4)
         self.button = Button(self.init_window_name, text="Search", bg="lightblue", width=10,command=self.textsearch)  # 调用内部方法  加()为直接调用
-        self.button.place(x=115, y = 245)
-
+        self.button.grid(row=19, column=4)
 
     #功能函数
     def textsearch(self):
         title = self.title.get(1.0,END).strip('\n')
         keyword = self.keyword.get(1.0,END).strip('\n')
         year = self.year.get(1.0,END).strip('\n')
-        # if src:
-        #     try:
-        #         myMd5 = hashlib.md5()
-        #         myMd5.update(src)
-        #         myMd5_Digest = myMd5.hexdigest()
-        #         #print(myMd5_Digest)
-        #         #输出到界面
-        #         self.result_data_Text.delete(1.0,END)
-        #         self.result_data_Text.insert(1.0,myMd5_Digest)
-        #         self.write_log_to_Text("INFO:str_trans_to_md5 success")
-        #     except:
-        #         self.result_data_Text.delete(1.0,END)
-        #         self.result_data_Text.insert(1.0,"字符串转MD5失败")
-        # else:
-        #     self.write_log_to_Text("ERROR:str_trans_to_md5 failed")
+        res = None
+        if (keyword == "") :
+            print("fuck")
+            if year=="":
+                res = search(title, title_only=True)
+            else:
+                res = search(title, start_year = year, title_only=True)
+    
+        title = [str(hit['_source']['title']) for hit in res['hits']['hits']]
+        scores = [hit['_score'] for hit in res['hits']['hits']]
+        index = [hit['_index'] for hit in res['hits']['hits']]
+        year = [hit['_source']['year'] for hit in res['hits']['hits']]
+        n_citation = [hit['_source']['n_citation'] for hit in res['hits']['hits']]
+        res_window = Tk()
+        res_window.title('result')
+        for i in range(10):
+            print('result',i+1,':','score:',scores[i])
+            print('index: ', index[i])
+            print('title:',title[i])
+            print('year: ', year[i])
+            print('n_citation: ', n_citation[i])
+            # print('authors:',authors[i])
+            print('--------------------------------------------------------------')
+        res_window.geometry('600x681+400+400')       #1068x681 is window size, +10 +10 is position shows
+        Label(res_window, text="Search Result -- Top 5", font=('Arial', 20)).grid(row=0, column=5)
 
+        Label(res_window, text="Result 1", font=('Arial', 17)).grid(row=3, column=4)
+        res1 = Text(res_window, width=40, height=5)
+        res1.grid(row=5,column=0,rowspan = 4, columnspan=10)
+        res1.insert(1.0, ("scores:" + str(scores[0]) + '\ntitle:' + title[0] + '\nyear:'+str(year[0])+'\nn_citation:'+str(n_citation[0])))
+        Label(res_window, text="Related To", font=('Arial', 17)).grid(row=3, column=40)
+        rel1 = Text(res_window, width=25, height=5)
+        rel1.grid(row=5,column=40,rowspan = 4, columnspan=4)
+        aso1 = associate_paper(self.graph, title[0])
+        while (len(aso1)<=2):
+            aso1.append("")
+        rel1.insert(1.0, aso1[0]+'\n'+aso1[1])
 
-    # Get current time
-    def get_current_time(self):
-        current_time = time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()))
-        return current_time
+        Label(res_window, text="Result 2", font=('Arial', 17)).grid(row=13, column=4)
+        res2 = Text(res_window, width=40, height=5)
+        res2.grid(row=15,column=0,rowspan = 4, columnspan=10)
+        res2.insert(1.0, ("scores:" + str(scores[1]) + '\ntitle:' + title[1] + '\nyear:'+str(year[1])+'\nn_citation:'+str(n_citation[1])))
+        Label(res_window, text="Related To", font=('Arial', 17)).grid(row=13, column=40)
+        rel2 = Text(res_window, width=25, height=5)
+        rel2.grid(row=15,column=40,rowspan = 4, columnspan=4)
+        aso2 = associate_paper(self.graph, title[1])
+        while (len(aso2)<=2):
+            aso2.append("")
+        rel2.insert(1.0, aso2[0]+'\n'+aso2[1])
+        
+        Label(res_window, text="Result 3", font=('Arial', 17)).grid(row=23, column=4)
+        res3 = Text(res_window, width=40, height=5)
+        res3.grid(row=25,column=0,rowspan = 4, columnspan=10)
+        res3.insert(1.0, ("scores:" + str(scores[2]) + '\ntitle:' + title[2] + '\nyear:'+str(year[2])+'\nn_citation:'+str(n_citation[2])))
+        Label(res_window, text="Related To", font=('Arial', 17)).grid(row=23, column=40)
+        rel3 = Text(res_window, width=25, height=5)
+        rel3.grid(row=25,column=40,rowspan = 4, columnspan=4)
+        aso3 = associate_paper(self.graph, title[2])
+        while (len(aso3)<=2):
+            aso3.append("")
+        rel3.insert(1.0, aso3[0]+'\n'+aso3[1])
 
+        Label(res_window, text="Result 4", font=('Arial', 17)).grid(row=33, column=4)
+        res4 = Text(res_window, width=40, height=5)
+        res4.grid(row=35,column=0,rowspan = 4, columnspan=10)
+        res4.insert(1.0, ("scores:" + str(scores[3]) + '\ntitle:' + title[3] + '\nyear:'+str(year[3])+'\nn_citation:'+str(n_citation[3])))
+        Label(res_window, text="Related To", font=('Arial', 17)).grid(row=33, column=40)
+        rel4 = Text(res_window, width=25, height=5)
+        rel4.grid(row=35,column=40,rowspan = 4, columnspan=4)
+        aso4 = associate_paper(self.graph, title[3])
+        while (len(aso4)<=2):
+            aso4.append("")
+        rel4.insert(1.0, aso4[0]+'\n'+aso4[1])
+
+        Label(res_window, text="Result 5", font=('Arial', 17)).grid(row=43, column=4)
+        res5 = Text(res_window, width=40, height=5)
+        res5.grid(row=45,column=0,rowspan = 4, columnspan=10)
+        res5.insert(1.0, ("scores:" + str(scores[4]) + '\ntitle:' + title[4] + '\nyear:'+str(year[4])+'\nn_citation:'+str(n_citation[4])))
+        Label(res_window, text="Related To", font=('Arial', 17)).grid(row=43, column=40)
+        rel5 = Text(res_window, width=25, height=5)
+        rel5.grid(row=45,column=40,rowspan = 4, columnspan=4)
+        aso5 = associate_paper(self.graph, title[4])
+        while (len(aso5)<=2):
+            aso5.append("")
+        rel5.insert(1.0, aso5[0]+'\n'+aso5[1])
+
+        res_window.mainloop()
+            
 
 def gui_start():
     init_window = Tk()           
